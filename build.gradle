@@ -1,0 +1,29 @@
+plugins {
+  id "org.web3j.openapi" version "4.8.4"
+}
+
+group 'io.circles-ubi'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+web3j {
+    generatedPackageName = 'io.circlesubi'
+    addressBitLength = 160
+    excludedContracts = ['SafeMath','Address']
+    openapi {
+        contextPath = 'circles-ubi'
+    }
+}
+
+processResources {
+    from('swagger-ui-openapi') { into 'static' }
+}
+
+startScripts {
+    doLast {
+        windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*', 'set CLASSPATH=.;%APP_HOME%/lib/*')
+    }
+}
