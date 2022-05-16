@@ -1,0 +1,88 @@
+###
+### Deploy Hub
+###
+
+POST http://localhost:9090/circles-ubi/contracts/hub
+Content-Type: application/json
+
+{
+  "_inflation": 1,
+  "_period": 1,
+  "_symbol": "CRC",
+  "_name": "Circles",
+  "_signupBonus": 50000000000000000000,
+  "_initialIssuance": 1,
+  "_timeout": 1
+}
+
+###
+### Deploy Group Currency Token
+###
+
+POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken
+Content-Type: application/json
+
+{
+  "_hub": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "_treasury": "0x0000000000000000000000000000000000000001",
+  "_owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "_mintFeePerThousand": 1,
+  "_name": "GCT",
+  "_symbol": "GCT"
+}
+
+###
+### Signup with account 1
+###
+
+GET http://localhost:9091/circles-ubi/contracts/hub/0x5FbDB2315678afecb367f032d93F642f64180aa3/signup
+
+###
+### Transfer Tokens to GCT (TODO: Should be hubTransfer?)
+###
+
+POST http://localhost:9091/circles-ubi/contracts/token/0xa16E02E87b7454126E5E10d957A927A7F5B5d2be/transfer
+Content-Type: application/json
+
+{
+  "dst": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "wad": 1000
+}
+
+###
+### Check Balance of account 1, should be 1000
+###
+
+POST http://localhost:9091/circles-ubi/contracts/token/0xa16E02E87b7454126E5E10d957A927A7F5B5d2be/balanceOf
+Content-Type: application/json
+
+{
+  "account": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+}
+
+###
+### Directly addMemberToken, otherwise transferred Token is not trusted
+###
+
+POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken/0xe7f1725e7734ce288f8367e1bb143e90bb3f0512/addMemberToken
+Content-Type: application/json
+
+{
+  "_member": "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
+}
+
+###
+### Mint GCT for trusted token as Collateral
+###
+
+POST http://localhost:9091/circles-ubi/contracts/groupcurrencytoken/0xe7f1725e7734ce288f8367e1bb143e90bb3f0512/mint
+Content-Type: application/json
+
+{
+  "_collateral": [
+    "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be"
+  ],
+  "_amount": [
+    1000
+  ]
+}

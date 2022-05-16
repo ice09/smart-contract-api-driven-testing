@@ -10,7 +10,7 @@ repositories {
 }
 
 web3j {
-    generatedPackageName = 'io.circlesubi'
+    generatedPackageName = 'tech.circlesubi'
     addressBitLength = 160
     excludedContracts = ['SafeMath','Address']
     openapi {
