@@ -65,6 +65,12 @@ We are using the [IntelliJ HTTP Plugin (Ultimate Version)](https://www.jetbrains
 
 _Note: You can as well use the Visual Studio Code REST Client for Testing, but without Assertions._
 
+### Possible Actions on Responses
+
+* Assert with `client.assert`
+* Store responses with `client.global.set`
+* Log variables with `client.log`
+
 ```javascript
 ###
 ### Deploy Hub Smart Constract
