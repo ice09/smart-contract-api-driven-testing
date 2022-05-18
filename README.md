@@ -6,11 +6,17 @@ _Note: These steps show how to create a OpenAPI Web3j Gradle Project from scratc
 
 ## Create Smart Contract OpenAPI/Swagger UI Generation for New Projects
 
+### Prerequisites
+
+* Install [Epirus CLI](https://github.com/epirus-io/epirus-cli)
+
+### Create new Project with Epirus
+
 * Create new OpenAPI Web3j Gradle project: `epirus openapi new`
 
 ### Project-Specific Modifications in Gradle Configuration
 
-* Adjust Contract and Packages in `build.gradle`
+* Adjust Contract and Packages in `build.gradle` according to your Smart Contracts
 
 ```
 web3j {
@@ -37,7 +43,7 @@ startScripts {
 
 `rootProject.name = 'circles-ubi';`
 
-* Copy all smart contracts to `src/main/solidity`
+* Copy all Smart Contracts to `src/main/solidity`
 
 ## Run OpenAPI Smart Contracts REST Services with Swagger-UI
 
@@ -46,14 +52,93 @@ startScripts {
 * Run Application: Change to folder `start-scripts/run` and run `start-local-node-acct0.bat`
 * Open Swagger-UI at http://localhost:9090/swagger-ui
 
+![](https://i.imgur.com/JMhIR9A.png)
+
 ### Using Different EOA accounts for Smart Contract Invocations
 
 * We added 5 start scripts with the first 5 private keys for the given mnemonic above in the `start-scripts/run` folder.
 * The contracts must be called at different ports for different accounts, `account 0: 9090`, `account 1: 9091`, ...
 
-## Smart Contract Testing with the IntelliJ HTTP Plugin
+## Test Suite with IntelliJ REST Client
 
+We are using the [IntelliJ HTTP Plugin (Ultimate Version)](https://www.jetbrains.com/help/idea/http-client-in-product-code-editor.html) for scripting REST Service tests.
 
+_Note: You can as well use the Visual Studio Code REST Client for Testing, but without Assertions._
+
+```javascript
+###
+### Deploy Hub Smart Constract
+###
+
+POST http://localhost:9090/circles-ubi/contracts/hub
+Content-Type: application/json
+
+{
+  "_inflation": 1,
+  "_period": 1,
+  "_symbol": "CRC",
+  "_name": "Circles",
+  "_signupBonus": 50000000000000000000,
+  "_initialIssuance": 1,
+  "_timeout": 1
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("hubContractAddress", response.body.contractAddress);
+    client.log(client.global.get("hubContractAddress"));
+%}
+```
+
+### Read Events to Verify Smart Contract Function Executions
+
+* Call the function on the Smart Contract which emits the Event
+* Store the complete response of the REST Service
+* Use the stored response for Event retrieval
+
+```javascript
+###
+### Signup with account 1
+###
+
+GET http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("signupResponse", JSON.stringify(response.body));
+    client.log(client.global.get("signupResponse"));
+%}
+
+###
+### Get Token Address from Token Contract Deployment Logs
+###
+POST http://localhost:9090/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+Content-Type: application/json
+
+{{signupResponse}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("acct1TokenAddress", response.body[0].token);
+    client.log(client.global.get("acct1TokenAddress"));
+%}
+```
+
+## Test Suite with SoapUI
+
+You can use any REST Service testing tool like Postman or SoapUI.
+
+_Screenshot for SoapUI Sample Test Suite_
+
+![](https://i.imgur.com/xKqaEQO.png)
+
+### References
 
 #### Documentation: Manual Modifications for Circles UBI Contracts
 

@@ -1,5 +1,5 @@
 ###
-### Deploy Hub
+### Deploy Hub Smart Constract
 ###
 
 POST http://localhost:9090/circles-ubi/contracts/hub
