@@ -1,0 +1,243 @@
+###
+### Deploy Hub Smart Constract
+###
+
+POST http://localhost:9090/circles-ubi/contracts/hub
+Content-Type: application/json
+
+{
+  "_inflation": 1,
+  "_period": 1,
+  "_symbol": "CRC",
+  "_name": "Circles",
+  "_signupBonus": 50000000000000000000,
+  "_initialIssuance": 1,
+  "_timeout": 1
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("hubContractAddress", response.body.contractAddress);
+    client.log(client.global.get("hubContractAddress"));
+%}
+
+###
+### Deploy Group Currency Token
+###
+
+POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken
+Content-Type: application/json
+
+{
+  "_hub": "{{hubContractAddress}}",
+  "_treasury": "0x0000000000000000000000000000000000000001",
+  "_owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "_mintFeePerThousand": 1,
+  "_name": "GCT",
+  "_symbol": "GCT"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("gctContractAddress", response.body.contractAddress);
+    client.log(client.global.get("gctContractAddress"));
+%}
+
+###
+### Signup with account 1
+###
+
+GET http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("signupResponseAcct1", JSON.stringify(response.body));
+    client.log(client.global.get("signupResponseAcct1"));
+%}
+
+###
+### Signup with account 2
+###
+
+GET http://localhost:9092/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("signupResponseAcct2", JSON.stringify(response.body));
+    client.log(client.global.get("signupResponseAcct2"));
+%}
+
+###
+### Get Token Address from Token Contract Deployment Logs for acct 1
+###
+POST http://localhost:9090/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+Content-Type: application/json
+
+{{signupResponseAcct1}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("acct1TokenAddress", response.body[0].token);
+    client.global.set("acct1Address", response.body[0].user);
+    client.log(client.global.get("acct1TokenAddress"));
+%}
+
+###
+### Get Token Address from Token Contract Deployment Logs for acct 2
+###
+POST http://localhost:9090/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+Content-Type: application/json
+
+{{signupResponseAcct2}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("acct2TokenAddress", response.body[0].token);
+    client.global.set("acct2Address", response.body[0].user);
+    client.log(client.global.get("acct2TokenAddress"));
+%}
+
+###
+### Transfer Tokens to GCT (TODO: Should be hubTransfer?)
+###
+
+POST http://localhost:9092/circles-ubi/contracts/token/{{acct2TokenAddress}}/transfer
+Content-Type: application/json
+
+{
+  "dst": "{{gctContractAddress}}",
+  "wad": 1000
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Check Balance of account 1, should be 1000, TODO Add Check
+###
+
+POST http://localhost:9092/circles-ubi/contracts/token/{{acct2TokenAddress}}/balanceOf
+Content-Type: application/json
+
+{
+  "account": "{{gctContractAddress}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Trust account 2 with account 1
+###
+
+POST http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/trust
+Content-Type: application/json
+
+{
+  "user": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+  "limit": 100
+}
+
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### addDelegateTrustee, otherwise transferred Token is not trusted
+###
+
+POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/addDelegatedTrustee
+Content-Type: application/json
+
+{
+  "_account": "{{acct1Address}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Mint GCT for trusted token as Collateral, Should not work!
+###
+
+POST http://localhost:9091/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+Content-Type: application/json
+
+{
+  "_collateral": [
+    "{{acct1TokenAddress}}"
+  ],
+  "_amount": [
+    1000
+  ]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 500, "Should not work");
+    });
+%}
+
+###
+### delegateTrust for acct1->acct2 (called by acct2!)
+###
+
+POST http://localhost:9092/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/delegateTrust
+Content-Type: application/json
+
+{
+  "_index": 0,
+  "_trustee": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Mint GCT for trusted token (token2acct) as Collateral
+###
+
+POST http://localhost:9091/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+Content-Type: application/json
+
+{
+  "_collateral": [
+    "{{acct2TokenAddress}}"
+  ],
+  "_amount": [
+    1000
+  ]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}

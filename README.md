@@ -47,6 +47,8 @@ startScripts {
 
 ## Run OpenAPI Smart Contracts REST Services with Swagger-UI
 
+_Note: You have to copy the current Smart Contracts from this repo: ... to the `src/main/solidity` folder_
+
 * Start _Ganache_, set mnemonic to **test test test test test test test test test test test junk**
    * Set default gas x10 in _Ganache_ (67219750)
 * Run Application: Change to folder `start-scripts/run` and run `start-local-node-acct0.bat`
