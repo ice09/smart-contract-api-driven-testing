@@ -60,6 +60,7 @@ _Note: You have to copy the current Smart Contracts from this repo: ... to the `
 
 * We added 5 start scripts with the first 5 private keys for the given mnemonic above in the `start-scripts/run` folder.
 * The contracts must be called at different ports for different accounts, `account 0: 9090`, `account 1: 9091`, ...
+* For all existing tests in `src/test/http` tun run successfully, *node0, node1 and node2* must be running.
 
 ## Test Suite with IntelliJ REST Client
 
