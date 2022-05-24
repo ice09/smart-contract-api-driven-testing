@@ -47,7 +47,7 @@ startScripts {
 
 ## Run OpenAPI Smart Contracts REST Services with Swagger-UI
 
-_Note: You have to copy the current Smart Contracts from this repo: ... to the `src/main/solidity` folder_
+_Note: You have to copy the current Smart Contracts from this repo: https://github.com/ice09/circles-contracts/tree/hub-v1-comp to the `src/main/solidity` folder_
 
 * Start _Ganache_, set mnemonic to **test test test test test test test test test test test junk**
    * Set default gas x10 in _Ganache_ (67219750)
