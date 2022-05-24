@@ -1,5 +1,5 @@
 .gradle
-.idea
+.idea/**
 build
 logs
 /src/main/solidity/**/*.sol
