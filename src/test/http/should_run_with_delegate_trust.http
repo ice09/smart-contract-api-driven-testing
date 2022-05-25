@@ -2,7 +2,7 @@
 ### Deploy Hub Smart Constract
 ###
 
-POST http://localhost:9090/circles-ubi/contracts/hub
+POST {{server0}}/circles-ubi/contracts/hub
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 ### Deploy Group Currency Token
 ###
 
-POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken
+POST {{server0}}/circles-ubi/contracts/groupcurrencytoken
 Content-Type: application/json
 
 {
@@ -51,7 +51,7 @@ Content-Type: application/json
 ### Signup with account 1
 ###
 
-GET http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+GET {{server1}}/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
 
 > {%
     client.test("Request executed successfully", function() {
@@ -65,7 +65,7 @@ GET http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/signu
 ### Signup with account 2
 ###
 
-GET http://localhost:9092/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+GET {{server2}}/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
 
 > {%
     client.test("Request executed successfully", function() {
@@ -78,7 +78,7 @@ GET http://localhost:9092/circles-ubi/contracts/hub/{{hubContractAddress}}/signu
 ###
 ### Get Token Address from Token Contract Deployment Logs for acct 1
 ###
-POST http://localhost:9090/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+POST {{server0}}/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
 Content-Type: application/json
 
 {{signupResponseAcct1}}
@@ -95,7 +95,7 @@ Content-Type: application/json
 ###
 ### Get Token Address from Token Contract Deployment Logs for acct 2
 ###
-POST http://localhost:9090/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+POST {{server0}}/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
 Content-Type: application/json
 
 {{signupResponseAcct2}}
@@ -113,7 +113,7 @@ Content-Type: application/json
 ### Transfer Tokens to GCT (TODO: Should be hubTransfer?)
 ###
 
-POST http://localhost:9092/circles-ubi/contracts/token/{{acct2TokenAddress}}/transfer
+POST {{server2}}/circles-ubi/contracts/token/{{acct2TokenAddress}}/transfer
 Content-Type: application/json
 
 {
@@ -131,7 +131,7 @@ Content-Type: application/json
 ### Check Balance of account 1, should be 1000, TODO Add Check
 ###
 
-POST http://localhost:9092/circles-ubi/contracts/token/{{acct2TokenAddress}}/balanceOf
+POST {{server2}}/circles-ubi/contracts/token/{{acct2TokenAddress}}/balanceOf
 Content-Type: application/json
 
 {
@@ -148,7 +148,7 @@ Content-Type: application/json
 ### Trust account 2 with account 1
 ###
 
-POST http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/trust
+POST {{server1}}/circles-ubi/contracts/hub/{{hubContractAddress}}/trust
 Content-Type: application/json
 
 {
@@ -167,7 +167,7 @@ Content-Type: application/json
 ### addDelegateTrustee, otherwise transferred Token is not trusted
 ###
 
-POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/addDelegatedTrustee
+POST {{server0}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/addDelegatedTrustee
 Content-Type: application/json
 
 {
@@ -184,7 +184,7 @@ Content-Type: application/json
 ### Mint GCT for trusted token as Collateral, Should not work!
 ###
 
-POST http://localhost:9091/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+POST {{server1}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
 Content-Type: application/json
 
 {
@@ -206,7 +206,7 @@ Content-Type: application/json
 ### delegateTrust for acct1->acct2 (called by acct2!)
 ###
 
-POST http://localhost:9092/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/delegateTrust
+POST {{server2}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/delegateTrust
 Content-Type: application/json
 
 {
@@ -224,7 +224,7 @@ Content-Type: application/json
 ### Mint GCT for trusted token (token2acct) as Collateral
 ###
 
-POST http://localhost:9091/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+POST {{server1}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
 Content-Type: application/json
 
 {

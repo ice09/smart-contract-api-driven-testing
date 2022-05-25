@@ -2,7 +2,7 @@
 ### Deploy Hub Smart Constract
 ###
 
-POST http://localhost:9090/circles-ubi/contracts/hub
+POST {{server0}}/circles-ubi/contracts/hub
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 ### Deploy Group Currency Token
 ###
 
-POST http://localhost:9090/circles-ubi/contracts/groupcurrencytoken
+POST {{server0}}/circles-ubi/contracts/groupcurrencytoken
 Content-Type: application/json
 
 {
@@ -51,7 +51,7 @@ Content-Type: application/json
 ### Signup with account 1
 ###
 
-GET http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+GET {{server1}}/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
 
 > {%
     client.test("Request executed successfully", function() {
@@ -64,7 +64,7 @@ GET http://localhost:9091/circles-ubi/contracts/hub/{{hubContractAddress}}/signu
 ###
 ### Get Token Address from Token Contract Deployment Logs
 ###
-POST http://localhost:9090/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+POST {{server0}}/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
 Content-Type: application/json
 
 {{signupResponse}}
@@ -81,7 +81,7 @@ Content-Type: application/json
 ### Transfer Tokens to GCT (TODO: Should be hubTransfer?)
 ###
 
-POST http://localhost:9091/circles-ubi/contracts/token/{{acct1TokenAddress}}/transfer
+POST {{server1}}/circles-ubi/contracts/token/{{acct1TokenAddress}}/transfer
 Content-Type: application/json
 
 {
@@ -99,7 +99,7 @@ Content-Type: application/json
 ### Check Balance of account 1, should be 1000
 ###
 
-POST http://localhost:9091/circles-ubi/contracts/token/{{acct1TokenAddress}}/balanceOf
+POST {{server1}}/circles-ubi/contracts/token/{{acct1TokenAddress}}/balanceOf
 Content-Type: application/json
 
 {
@@ -122,7 +122,7 @@ Content-Type: application/json
 ### Mint GCT for trusted token as Collateral
 ###
 
-POST http://localhost:9091/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+POST {{server1}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
 Content-Type: application/json
 
 {
