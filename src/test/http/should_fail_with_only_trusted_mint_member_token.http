@@ -1,0 +1,191 @@
+###
+### Deploy Hub Smart Constract with Acct0 as Owner
+###
+
+POST {{server0}}/circles-ubi/contracts/hub
+Content-Type: application/json
+
+{
+  "_inflation": 1,
+  "_period": 1,
+  "_symbol": "CRC",
+  "_name": "Circles",
+  "_signupBonus": 50000000000000000000,
+  "_initialIssuance": 1,
+  "_timeout": 1
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("hubContractAddress", response.body.contractAddress);
+    client.log(client.global.get("hubContractAddress"));
+%}
+
+###
+### Deploy Group Currency Token with Acct0 as Owner
+###
+
+POST {{server0}}/circles-ubi/contracts/groupcurrencytoken
+Content-Type: application/json
+
+{
+  "_hub": "{{hubContractAddress}}",
+  "_treasury": "0x0000000000000000000000000000000000000001",
+  "_owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "_mintFeePerThousand": 1,
+  "_name": "GCT",
+  "_symbol": "GCT"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("gctContractAddress", response.body.contractAddress);
+    client.log(client.global.get("gctContractAddress"));
+%}
+
+###
+### Signup with Acct1
+###
+
+GET {{server1}}/circles-ubi/contracts/hub/{{hubContractAddress}}/signup
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("signupResponse", JSON.stringify(response.body));
+    client.log(client.global.get("signupResponse"));
+%}
+
+###
+### Get Token Address for Acct1 from Token Contract Deployment Logs
+###
+POST {{server0}}/circles-ubi/contracts/hub/{{hubContractAddress}}/events/signup
+Content-Type: application/json
+
+{{signupResponse}}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("acct1TokenAddress", response.body[0].token);
+    client.log(client.global.get("acct1TokenAddress"));
+%}
+
+###
+### Transfer Tokens from Acct1 to GCT (TODO: Should be hubTransfer?)
+###
+
+POST {{server1}}/circles-ubi/contracts/token/{{acct1TokenAddress}}/transfer
+Content-Type: application/json
+
+{
+  "dst": "{{gctContractAddress}}",
+  "wad": 1000
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Check Balance of Acct1, should be 1000 (TODO: Add check for 1000)
+###
+
+POST {{server1}}/circles-ubi/contracts/token/{{acct1TokenAddress}}/balanceOf
+Content-Type: application/json
+
+{
+  "account": "{{gctContractAddress}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Set onlyTrusted to true, so only Acct1 can mint
+###
+
+POST {{server0}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/setOnlyTrustedCanMint
+Content-Type: application/json
+
+{
+  "_onlyTrustedCanMint": true
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Directly addMemberToken for Acct1, otherwise transferred Token is not trusted
+###
+
+POST {{server0}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/addMemberToken
+Content-Type: application/json
+
+{
+  "_member": "{{acct1TokenAddress}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+### Mint GCT for Acct1 Token as Collateral with non-trusted Acct2
+###
+
+POST {{server2}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+Content-Type: application/json
+
+{
+  "_collateral": [
+    "{{acct1TokenAddress}}"
+  ],
+  "_amount": [
+    1000
+  ]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 500, "Should fail with non-trusted account.");
+    });
+%}
+
+###
+### Mint GCT for Acct1 Token as Collateral with trusted account.
+###
+
+POST {{server1}}/circles-ubi/contracts/groupcurrencytoken/{{gctContractAddress}}/mint
+Content-Type: application/json
+
+{
+  "_collateral": [
+    "{{acct1TokenAddress}}"
+  ],
+  "_amount": [
+    1000
+  ]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
